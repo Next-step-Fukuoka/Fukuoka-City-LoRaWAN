@@ -1,0 +1,81 @@
+<html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Google Gauge - ThingSpeak</title>
+  </head>
+		
+  <body><div align="center">
+    <div id='chart_div'></div>
+    <div>
+  </body>
+</html>	
+
+<style type="text/css">
+  body { background-color: #fff; }
+</style>
+
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'></script> 
+<script type='text/javascript' src='https://www.google.com/jsapi'></script>
+<script type='text/javascript'>
+
+  // set your channel id here
+  var channel_id = 341159 ;
+  // set your channel's read api key here if necessary
+  var api_key = 'LOHRL1NI4DTA3EJY';
+  // maximum value for the gauge
+  var max_gauge_value = 5000;
+  // name of the gauge
+  var gauge_name = 'CO2';
+
+	var chart; 
+	var charts;
+	var data;
+
+      	google.load('visualization', '1', {packages:['gauge']});
+      	google.setOnLoadCallback(initChart);
+
+	function displayData(point) {
+	
+		data.setValue(0, 0, 'CO2');
+		data.setValue(0, 1, point);
+		chart.draw(data, options);
+	
+	}
+
+	function loadData() {
+	
+		// variable for the data point
+		var p;
+	
+		$.getJSON('https://api.thingspeak.com/channels/' + channel_id + '/feed/last.json?callback=?', function(data) {
+		
+		// get the data point
+		p = data.field3;
+	
+		if (p)
+		{
+//			p = Math.round((p / 1023) * 100);
+			displayData(p);
+		}
+	
+		});
+	
+	}
+
+	function initChart() {
+
+		data = new google.visualization.DataTable();
+		data.addColumn('string', 'Label');
+		data.addColumn('number', 'Value');
+		data.addRows(1);
+	        
+	        chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+            options = {width: 240, height: 240, min: 0, max: 5000, greenFrom: 400, greenTo: 1000,  redFrom: 2000, redTo: 5000, yellowFrom:1000, yellowTo: 2000, minorTicks: 5};
+	
+		loadData();
+
+		setInterval('loadData()', 15000);
+	        
+	}
+
+</script>
